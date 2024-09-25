@@ -1,45 +1,75 @@
-const morto = require("../models/Morto")
+const Morto = require("../models/mortos")
 
-async function registrarMorto(nome, tamanho, causa, idade) {
+async function registrarMorto(req, res) {
+    const { nome, tamanho, causa, idade } = req.body
     try {
-        const novoMorto = new morto({ nome, tamanho, causa, idade });
-        return await novoMorto.save();
+        const novoMorto = new Morto({ nome, tamanho, causa, idade });
+        const mortoSalvo = await novoMorto.save();
+        res.status(201).json({
+            mensagem: "Morto registrado com sucesso. ",
+            morto: mortoSalvo,
+        })
     } catch (erro) {
-        console.error("Erro ao registrar morto:", erro);
-        throw erro;
+        res.status(500).json({
+            mensagem: "Erro ao cadastrar o morto. ",
+            erro: erro.mensagem,
+        })
     }
 }
 
-async function listarMortos() {
+async function listarMortos(req, res) {
     try {
-        return await morto.find();
+        const mor = await Morto.find();
+        res.status(200).json(mor)
     } catch (erro) {
-        console.error("Erro ao listar mortos:", erro);
-        throw erro;
+        res.status(500).json({
+            mensagem: "Erro ao listar o morto. ",
+            erro: erro.mensagem,
+        })
     }
 }
 
-async function atualizarMorto(id, nome, tamanho, causa, idade) {
+async function atualizarMorto(req, res) {
+    const { id } = req.params
+    const { nome, tamanho, causa, idade } = req.body
     try {
-        const novoMortinho = await morto.findByIdAndUpdate(
+        const novoMortinho = await Morto.findByIdAndUpdate(
             id,
             { nome, tamanho, causa, idade },
             { new: true, runValidators: true }
         );
-        return novoMortinho;
+        if (novoMortinho) {
+            res.status(200).json({
+                mensagem: "Morto atualizado com sucesso. ",
+                morto: novoMortinho,
+            })
+        } else {
+            res.status(404).json({ mensagem: "Morto não encontrado. " })
+        }
     } catch (erro) {
-        console.error("Erro ao editar esse morto:", erro);
-        throw erro;
+        res.status(500).json({
+            mensagem: "Erro ao cadastrar o morto. ",
+            erro: erro.mensagem,
+        })
     }
 }
 
-async function deletarMorto(id) {
+async function deletarMorto(req, res) {
+    const { id } = req.params;
     try {
-        const mortoDeletado = await morto.findByIdAndDelete(id);
-        return mortoDeletado;
+        const mortoDeletado = await Morto.findByIdAndDelete(id);
+        if (mortoDeletado) {
+            res.status(200).json({
+                mensagem: "Morto deletado com sucesso. ",
+                morto: mortoDeletado,
+            })
+        } else {
+            res.status(404).json({ mensagem: "Morto não encontrado. " })
+        }
     } catch (erro) {
-        console.error("Erro ao excluir esse  morto:", erro);
-        throw erro;
+        res.status(500).json({
+            mensagem: "erro ao deletar o morto. "
+        })
     }
 }
 
